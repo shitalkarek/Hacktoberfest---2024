@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Interactive Weather Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard">
+        <div class="card">
+            <h1 id="city-name">City Name</h1>
+            <h2 id="temperature">-- °C</h2>
+            <p id="description">Weather Description</p>
+            <div class="weather-icon">
+                <img id="icon" src="" alt="Weather Icon" />
+            </div>
+            <div class="additional-info">
+                <p>Humidity: <span id="humidity">--</span>%</p>
+                <p>Wind Speed: <span id="wind-speed">--</span> km/h</p>
+            </div>
+        </div>
+        <input type="text" id="city-input" placeholder="Enter city name..." />
+        <button id="search-btn">Search</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #74ebd5, #acb6e5); /* Gradient background */
+    font-family: 'Arial', sans-serif;
+}
+
+/* Dashboard Container */
+.dashboard {
+    perspective: 1000px; /* Perspective for 3D effect */
+}
+
+/* Weather Card */
+.card {
+    width: 300px;
+    height: 400px;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+    padding: 20px;
+    text-align: center;
+    transform-style: preserve-3d; /* Maintain 3D space */
+    transition: transform 0.5s; /* Smooth transition */
+}
+
+/* Card Header */
+h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 48px;
+    margin: 10px 0;
+    color: #007BFF; /* Blue color for temperature */
+}
+
+.weather-icon img {
+    width: 100px;
+}
+
+.additional-info p {
+    margin: 5px 0;
+}
+
+/* Input and Button Styles */
+#city-input {
+    margin-top: 20px;
+    padding: 10px;
+    width: 200px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+#search-btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007BFF;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#search-btn:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* Hover Effect */
+.card:hover {
+    transform: translateY(-10px) rotateY(5deg); /* Slight lift and rotation */
+}
+
+const apiKey = 'YOUR_API_KEY'; // Replace with your OpenWeatherMap API key
+const cityInput = document.getElementById('city-input');
+const searchBtn = document.getElementById('search-btn');
+
+const cityName = document.getElementById('city-name');
+const temperature = document.getElementById('temperature');
+const description = document.getElementById('description');
+const icon = document.getElementById('icon');
+const humidity = document.getElementById('humidity');
+const windSpeed = document.getElementById('wind-speed');
+
+// Fetch weather data based on city name
+const fetchWeather = async (city) => {
+    try {
+        const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
+        const data = await response.json();
+
+        if (data.cod === 200) {
+            updateUI(data);
+        } else {
+            alert('City not found. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error fetching weather data:', error);
+    }
+};
+
+// Update the UI with fetched weather data
+const updateUI = (data) => {
+    cityName.textContent = data.name;
+    temperature.textContent = `${Math.round(data.main.temp)} °C`;
+    description.textContent = data.weather[0].description;
+    icon.src = `http://openweathermap.org/img/wn/${data.weather[0].icon}.png`;
+    humidity.textContent = data.main.humidity;
+    windSpeed.textContent = data.wind.speed;
+};
+
+// Event listener for search button
+searchBtn.addEventListener('click', () => {
+    const city = cityInput.value.trim();
+    if (city) {
+        fetchWeather(city);
+    } else {
+        alert('Please enter a city name.');
+    }
+});
+
+// Optional: Event listener for Enter key
+cityInput.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') {
+        searchBtn.click();
+    }
+});
